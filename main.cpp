@@ -145,44 +145,24 @@ public:
 private:
     std::optional<wxImage> TryLoadByWx(const std::filesystem::path &path) const
     {
+        CuConsole::SetForegroundColor(CuConsole::Color::Gray);
         CuConsole::WriteLine("use wxWidgets");
         try
         {
             wxLogNull ignore{};
             return CuImg::LoadFile_DiscreteImageRGBA_wxWidgets(path).GetContext().Raw();
         }
-        catch (const std::exception &ex)
+        catch (const std::exception& ex)
         {
+            CuConsole::SetForegroundColor(CuConsole::Color::Red);
             CuConsole::WriteLine("wxWidgets: ", ex.what());
         }
         return {};
     }
 
-    static wxImage RGBA2RGB_A(const uint8_t *data, const int width, const int height, const int linesize)
-    {
-        auto *rgb = (uint8_t *)malloc(width * height * 3);
-        auto *a = (uint8_t *)malloc(width * height * 1);
-        wxImage ret(width, height, rgb, a);
-
-        for (auto i = 0; i < height; ++i)
-        {
-            for (auto j = 0; j < width; ++j)
-            {
-                const auto *pRgba = data + linesize * i + j * 4;
-                auto *pRgb = rgb + width * 3 * i + j * 3;
-                auto *pA = a + width * 1 * i + j * 1;
-                pRgb[0] = pRgba[0];
-                pRgb[1] = pRgba[1];
-                pRgb[2] = pRgba[2];
-                pA[0] = pRgba[3];
-            }
-        }
-
-        return ret;
-    }
-
     std::optional<wxImage> TryLoadByStb(const std::filesystem::path &path) const
     {
+        CuConsole::SetForegroundColor(CuConsole::Color::Gray);
         CuConsole::WriteLine("use stb");
         try
         {
@@ -190,6 +170,7 @@ private:
         }
         catch (const std::exception &ex)
         {
+            CuConsole::SetForegroundColor(CuConsole::Color::Red);
             CuConsole::WriteLine("stb: ", ex.what());
         }
         return {};
@@ -197,6 +178,7 @@ private:
 
     std::optional<wxImage> TryLoadByDirectXTex(const std::filesystem::path &path) const
     {
+        CuConsole::SetForegroundColor(CuConsole::Color::Gray);
         CuConsole::WriteLine("use DirectXTex");
         try
         {
@@ -221,7 +203,7 @@ private:
 									                                                     val));
 						                                                     tm local{};
                                                                              CuTime::Local(&local, &t);
-						                                                     return CuStr::FromStreamU8(
+						                                                     return CuStr::FormatU8("{}", 
 							                                                     std::put_time(&local, "%F %X"));
 					                                                     }
 					                                                     else
@@ -230,13 +212,15 @@ private:
 					                                                     } },
                                                                     v));
                     const auto left = CuStr::PadRightU8(CuStr::ToU8String(CuEnum::ToString(k)), leftSize + 1, ' ');
+                    CuConsole::SetForegroundColor(CuConsole::Color::Gray);
                     CuConsole::WriteLine(CuStr::ToDirtyUtf8StringView(CuStr::AppendsU8(left, right)));
                 }
             }
-            return RGBA2RGB_A(img.Data(), img.Width(), img.Height(), img.Linesize());
+            return CuImg::ConvertToDiscreteImageRGBA_wxWidgets(img).Raw();
         }
         catch (const std::exception &ex)
         {
+            CuConsole::SetForegroundColor(CuConsole::Color::Red);
             CuConsole::WriteLine("DirectX Tex: ", ex.what());
         }
         return {};
@@ -244,6 +228,7 @@ private:
 
     std::optional<wxImage> TryLoadByFFmpeg(const std::filesystem::path &path, const bool dumpInfo = true)
     {
+        CuConsole::SetForegroundColor(CuConsole::Color::Gray);
         CuConsole::WriteLine("use FFmpeg");
         try
         {
@@ -271,6 +256,7 @@ private:
         }
         catch (const std::exception &ex)
         {
+            CuConsole::SetForegroundColor(CuConsole::Color::Red);
             CuConsole::WriteLine("FFmpeg: ", ex.what());
         }
         return {};
@@ -278,6 +264,7 @@ private:
 
     std::optional<wxImage> TryLoadByOpenCv(const std::filesystem::path &path)
     {
+        CuConsole::SetForegroundColor(CuConsole::Color::Gray);
         CuConsole::WriteLine("use OpenCV");
         try
         {
@@ -285,6 +272,7 @@ private:
         }
         catch (const std::exception &ex)
         {
+            CuConsole::SetForegroundColor(CuConsole::Color::Red);
             CuConsole::WriteLine("OpenCV: ", ex.what());
         }
         return {};
@@ -292,6 +280,7 @@ private:
 
     std::optional<wxImage> TryLoadByQt(const std::filesystem::path &path)
     {
+        CuConsole::SetForegroundColor(CuConsole::Color::Gray);
         CuConsole::WriteLine("use Qt");
         try
         {
@@ -299,6 +288,7 @@ private:
         }
         catch (const std::exception &ex)
         {
+            CuConsole::SetForegroundColor(CuConsole::Color::Red);
             CuConsole::WriteLine("Qt: ", ex.what());
         }
         return {};
@@ -306,6 +296,7 @@ private:
 
     std::optional<wxImage> TryLoadByGraphicsMagick(const std::filesystem::path &path)
     {
+        CuConsole::SetForegroundColor(CuConsole::Color::Gray);
         CuConsole::WriteLine("use GraphicsMagick");
         try
         {
@@ -313,6 +304,7 @@ private:
         }
         catch (const std::exception &ex)
         {
+            CuConsole::SetForegroundColor(CuConsole::Color::Red);
             CuConsole::WriteLine("GraphicsMagick: ", ex.what());
         }
         return {};
@@ -320,7 +312,6 @@ private:
 
     std::optional<wxImage> TryLoadImpl(const std::filesystem::path &path)
     {
-        CuConsole::SetForegroundColor(CuConsole::Color::Gray);
         switch (CurrentDecoders[currentDecodersIdx])
         {
         case DecoderType::STB:
@@ -397,6 +388,7 @@ private:
                 auto r = TryLoadImpl(path);
                 const auto end = std::chrono::high_resolution_clock::now();
                 const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+                CuConsole::SetForegroundColor(CuConsole::Color::Gray);
                 CuConsole::WriteLine("try in ", ms.count(), "ms");
                 return r;
             };
@@ -518,25 +510,33 @@ public:
         {
             if (vidCtx)
             {
-                const auto handle = [&](auto &x)
-                {
-                    image = RGBA2RGB_A(x.Data(), x.Width(), x.Height(), x.Linesize());
-                    ++frameCount;
-                    UpdateImage();
-                };
-                vidCtx->Config.VideoHandler = handle;
-                while (!vidCtx->Eof())
-                {
-                    if (vidCtx->Read() == CuVid::StreamTypeVideo)
-                    {
-                        return true;
-                    }
-                }
-                if (frameCount < 2)
-                    return false;
-                image = TryLoadByFFmpeg(std::get<std::filesystem::path>(vidCtx->Config.Input), false);
-                UpdateImage();
-                return true;
+	            try
+	            {
+		            const auto handle = [&](auto &x)
+		            {
+		            	image = CuImg::ConvertToDiscreteImageRGBA_wxWidgets(x).Raw();
+			            ++frameCount;
+			            UpdateImage();
+		            };
+		            vidCtx->Config.VideoHandler = handle;
+		            while (!vidCtx->Eof())
+		            {
+			            if (vidCtx->Read() == CuVid::StreamTypeVideo)
+			            {
+				            return true;
+			            }
+		            }
+		            if (frameCount < 2)
+			            return false;
+		            image = TryLoadByFFmpeg(std::get<std::filesystem::path>(vidCtx->Config.Input), false);
+		            UpdateImage();
+		            return true;
+	            }
+	            catch (const std::exception& ex)
+	            {
+                    CuConsole::SetForegroundColor(CuConsole::Color::Red);
+                    CuConsole::WriteLine(ex.what());
+	            }
             }
         }
         catch (const std::exception &e)

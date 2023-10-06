@@ -2,11 +2,8 @@ cmake_minimum_required(VERSION 3.0.0)
 project(image_viewer VERSION 0.1.0 LANGUAGES C CXX)
 include(CMakePrintHelpers)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-include(CTest)
-enable_testing()
 
 find_package(wxWidgets CONFIG REQUIRED)
 find_package(Stb REQUIRED)
@@ -44,7 +41,3 @@ target_link_libraries(image_viewer PRIVATE
 
 target_include_directories(image_viewer PRIVATE "CppUtility" ${Stb_INCLUDE_DIR} ${FFMPEG_INCLUDE_DIRS})
 target_compile_definitions(image_viewer PRIVATE ${IvDefinitions})
-
-set(CPACK_PROJECT_NAME ${PROJECT_NAME})
-set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
-include(CPack)
