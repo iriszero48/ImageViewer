@@ -701,24 +701,24 @@ END_EVENT_TABLE()
 
 class MyApp : public wxApp
 {
-    wxFrame *frame;
-    wxImagePanel *drawPane;
+    wxFrame * frame = nullptr;
+    wxImagePanel * drawPane = nullptr;
 
 public:
-    bool OnInit()
+    bool OnInit() override
     {
-        // wxInitAllImageHandlers();
+        CuImg::WxImageDiscreteContext::Init();
 
-        wxBoxSizer *sizer = new wxBoxSizer(wxHORIZONTAL);
-        frame = new wxFrame(NULL, wxID_ANY, wxT("Image Viewer"), wxPoint(50, 50), wxSize(800, 600));
+        auto* sizer = new wxBoxSizer(wxHORIZONTAL);
+        frame = new wxFrame(nullptr, wxID_ANY, wxT("Image Viewer"), wxPoint(50, 50), wxSize(800, 600));
         frame->SetBackgroundColour(wxColour(14, 14, 14));
         frame->SetDoubleBuffered(true);
 
         drawPane = new wxImagePanel(frame, [&]
-                                    { if (!render_loop_on) switchRenderLoop(); });
+                                    { if (!renderLoopOn) SwitchRenderLoop(); });
         drawPane->DragAcceptFiles(true);
 
-        drawPane->Connect(wxEVT_DROP_FILES, wxDropFilesEventHandler(MyApp::OnDropFiles), NULL, this);
+        drawPane->Connect(wxEVT_DROP_FILES, wxDropFilesEventHandler(MyApp::OnDropFiles), nullptr, this);
         drawPane->Layout();
         drawPane->Centre();
 
@@ -762,22 +762,22 @@ public:
     }
 
 private:
-    bool render_loop_on = false;
+    bool renderLoopOn = false;
 
 public:
-    void switchRenderLoop()
+    void SwitchRenderLoop()
     {
-        if (render_loop_on)
-            Disconnect(wxEVT_IDLE, wxIdleEventHandler(MyApp::onIdle));
+        if (renderLoopOn)
+            Disconnect(wxEVT_IDLE, wxIdleEventHandler(MyApp::OnIdle));
         else
-            Connect(wxID_ANY, wxEVT_IDLE, wxIdleEventHandler(MyApp::onIdle));
-        render_loop_on = !render_loop_on;
+            Connect(wxID_ANY, wxEVT_IDLE, wxIdleEventHandler(MyApp::OnIdle));
+        renderLoopOn = !renderLoopOn;
     }
 
 private:
-    void onIdle(wxIdleEvent &evt)
+    void OnIdle(wxIdleEvent &evt)
     {
-        if (render_loop_on)
+        if (renderLoopOn)
         {
             if (drawPane->ReadNextFrame())
             {
@@ -785,7 +785,7 @@ private:
             }
             else
             {
-                switchRenderLoop();
+                SwitchRenderLoop();
             }
         }
     }
