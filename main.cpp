@@ -1,5 +1,6 @@
 #include <ranges>
 #include <random>
+#include <chrono>
 
 #include <wx/wx.h>
 #include <wx/sizer.h>
@@ -27,6 +28,7 @@ enum class DecoderType
     DECODER_MAX_ADD1
 };
 
+#ifdef CuUtil_Platform_Windows
 inline void AdjustConsoleBuffer(const int16_t minLength)
 {
     CONSOLE_SCREEN_BUFFER_INFO conInfo;
@@ -117,6 +119,7 @@ inline bool CreateNewConsole(const int16_t minLength)
 
     return result;
 }
+#endif
 
 class wxImagePanel : public wxPanel
 {
@@ -197,10 +200,7 @@ private:
 						                                                     T, CuImg::DirectXTexContext::VtTime>)
 					                                                     {
 						                                                     const auto t =
-							                                                     std::chrono::system_clock::to_time_t(
-								                                                     std::chrono::clock_cast<
-									                                                     std::chrono::system_clock>(
-									                                                     val));
+							                                                     std::chrono::system_clock::to_time_t(std::chrono::file_clock::to_sys(val));
 						                                                     tm local{};
                                                                              CuTime::Local(&local, &t);
 						                                                     return CuStr::FormatU8("{}", 
@@ -541,7 +541,7 @@ public:
         }
         catch (const std::exception &e)
         {
-            MessageBox(nullptr, CuStr::ToWString(e.what()).c_str(), L"WTF", 0);
+            wxMessageBox(wxString::FromUTF8(e.what()));
         }
         return false;
     }
@@ -682,9 +682,11 @@ public:
         if (hasConsole)
             return;
 
+#ifdef CuUtil_Platform_Windows
         CreateNewConsole(1024);
         SetConsoleOutputCP(65001);
         ShowWindow(GetConsoleWindow(), true);
+#endif
 
         av_log_set_level(AV_LOG_VERBOSE);
         hasConsole = true;
