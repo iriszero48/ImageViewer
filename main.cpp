@@ -141,7 +141,7 @@ class wxImagePanel : public wxPanel
     int currentDecodersIdx = 0;
 
 public:
-    explicit wxImagePanel(wxFrame *parent, std::function<void()> &&requestReadNextFrame) : wxPanel(parent), idx(-1), w(-1), h(-1), parent(parent), requestReadNextFrame(requestReadNextFrame)
+    wxImagePanel(wxFrame *parent, std::function<void()> requestReadNextFrame) : wxPanel(parent), idx(-1), w(-1), h(-1), parent(parent), requestReadNextFrame(requestReadNextFrame)
     {
     }
 
@@ -183,6 +183,7 @@ private:
     {
         CuConsole::SetForegroundColor(CuConsole::Color::Gray);
         CuConsole::WriteLine("use DirectXTex");
+#ifdef CU_IMG_HAS_DIRECTXTEX
         try
         {
             const auto img = CuImg::LoadFile_ImageRGBA_DirectXTex(path);
@@ -223,6 +224,9 @@ private:
             CuConsole::SetForegroundColor(CuConsole::Color::Red);
             CuConsole::WriteLine("DirectX Tex: ", ex.what());
         }
+#else
+        CuConsole::WriteLine("skip.");
+#endif
         return {};
     }
 
